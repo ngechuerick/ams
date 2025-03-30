@@ -20,7 +20,7 @@ const generateJWTToken = (user) => {
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = generateJWTToken(user._id);
+  const token = generateJWTToken(user);
 
   const cookieOptions = {
     expires: new Date(
@@ -31,7 +31,10 @@ const createSendToken = (user, statusCode, res) => {
     sameSite: "lax",
     path: "/"
   };
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = "None";
+  }
 
   res.cookie("jwt", token, cookieOptions);
 
