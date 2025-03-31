@@ -12,6 +12,7 @@ const Session = require("../models/sessionModel");
 
 /**TODO SETTING UP COOKIE */
 const generateJWTToken = (user) => {
+  console.log(user);
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN
   });

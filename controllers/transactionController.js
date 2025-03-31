@@ -36,7 +36,28 @@ exports.getTransaction = catchAsync(async (req, res, next) => {
 
 /**Endpoint for the confirmation of our api request status */
 exports.getCallback = catchAsync(async (req, res, next) => {
+  // Handle GET requests (from the frontend)
+  if (req.method === "GET") {
+    const { CheckoutRequestID } = req.query;
+    const payment = await Transaction.findOne({
+      checkoutRequestID: CheckoutRequestID
+    });
+
+    if (!payment) {
+      return res.status(200).json({ message: "Awaiting result" });
+    }
+
+    return res.status(200).json({
+      status: payment.status,
+      message:
+        payment.status === "success"
+          ? "Successfully paid"
+          : payment.errorMessage
+    });
+  }
+
   const callbackSTK = req.body?.Body.stkCallback;
+
   const { ResultCode } = req.body?.Body.stkCallback;
 
   if (!callbackSTK) {
@@ -72,12 +93,15 @@ exports.getCallback = catchAsync(async (req, res, next) => {
 
     /**Create a new transaction */
     const data = await Transaction.create({
-      // createdAt: TransactionDate,
       amountPaid: Amount,
       mpesatransactionCode: MpesaReceiptNumber,
       phoneNumber: PhoneNumber,
-      tenant: tenantPaying._id
+      tenant: tenantPaying._id,
+      checkoutRequestID: callbackSTK.CheckoutRequestID,
+      status: "success"
     });
+
+    console.log(data);
 
     if (!data) {
       return next(
@@ -103,23 +127,47 @@ exports.getCallback = catchAsync(async (req, res, next) => {
       status: "success",
       message: "Successfully paid"
     });
-  } else if (ResultCode === 1037) {
-    return next(new AppError("Please ensure your mobile is on!", 401));
-  } else if (ResultCode === 1025 || ResultCode === 999 || ResultCode === 1025) {
-    return next(new AppError("There was an error. Please try again.", 401));
-  } else if (ResultCode === 1032) {
-    return next(new AppError("You cancelled the request. Try again!", 401));
-  } else if (ResultCode === 1) {
-    return next(
-      new AppError("You do not have sufficient funds try again.", 401)
-    );
-  } else if (ResultCode === 1019) {
-    return next(new AppError("Transaction expired,please try again.", 401));
-  } else if (ResultCode === 1037) {
-    return next(new AppError("Request Failed,please try again", 401));
-  }
+  } else {
+    /** Handle common M-Pesa errors */
+    const errorMessages = {
+      1037: "Ensure your mobile is on!",
+      1025: "Transaction error. Try again.",
+      999: "Transaction error. Try again.",
+      1032: "You cancelled the request. Try again!",
+      1: "Insufficient funds. Try again.",
+      1019: "Transaction expired. Please try again."
+    };
 
-  return new AppError("There was an error making payments", 400);
+    const errorMessage =
+      errorMessages[ResultCode] || "Payment processing error";
+    await Transaction.create({
+      checkoutRequestID: callbackSTK.CheckoutRequestID,
+      status: "failed"
+    });
+
+    return next(new AppError(errorMessage, 401));
+
+    // if (errorMessages[ResultCode]) {
+    //   return next(new AppError(errorMessages[ResultCode], 401));
+    // }
+  }
+  // return next(new AppError("Payment processing error", 400));
+
+  // } else if (ResultCode === 1037) {
+  //   return next(new AppError("Please ensure your mobile is on!", 401));
+  // } else if (ResultCode === 1025 || ResultCode === 999 || ResultCode === 1025) {
+  //   return next(new AppError("There was an error. Please try again.", 401));
+  // } else if (ResultCode === 1032) {
+  //   return next(new AppError("You cancelled the request. Try again!", 401));
+  // } else if (ResultCode === 1) {
+  //   return next(
+  //     new AppError("You do not have sufficient funds try again.", 401)
+  //   );
+  // } else if (ResultCode === 1019) {
+  //   return next(new AppError("Transaction expired,please try again.", 401));
+  // } else if (ResultCode === 1037) {
+  //   return next(new AppError("Request Failed,please try again", 401));
+  // }
 });
 
 /**TODO I guess this will be implemented later */

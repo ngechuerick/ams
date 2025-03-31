@@ -31,12 +31,13 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:5174",
       "http://localhost:3000",
       "http://localhost:8000"
     ], // Allow requests from your frontend
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Set-Cookie"],
-    credentials: true
+    exposedHeaders: ["Set-Cookie"]
   })
 );
 

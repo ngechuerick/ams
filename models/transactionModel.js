@@ -26,6 +26,14 @@ const transactionSchema = mongoose.Schema({
   totalAmountPaid: {
     type: Number,
     default: 0
+  },
+  status: {
+    type: String,
+    enum: ["success", "failed"],
+    required: true
+  },
+  checkoutRequestID: {
+    type: String
   }
 });
 
