@@ -7,6 +7,7 @@ const generatePDF = require("../utils/pdfGenerate");
 const { initiatePayRequest } = require("../utils/darajaAPI");
 
 const Transaction = require("./../models/transactionModel");
+const { trySending } = require("../utils/email");
 
 /**Here we shall be handling all maters transaction */
 exports.getTransaction = catchAsync(async (req, res, next) => {
@@ -122,6 +123,21 @@ exports.getCallback = catchAsync(async (req, res, next) => {
     if (!tenant) {
       return next(new AppError("Tenant does not exist", 404));
     }
+
+    const date = new Date();
+    const month = date.getMonth() + 1;
+
+    /**When a new user is created the user should be sent an email with the user login details */
+    const optionsObj = {
+      email: [newUser.email],
+      subject: "NEW USER LOGIN DETAILS",
+      message: `Dear ${newUser.firstName} ,
+        Thankyou for making your rent payment for this Month ${month}
+        Amount: ${Amount}
+        `
+    };
+
+    await trySending(optionsObj);
 
     res.status(200).json({
       status: "success",
