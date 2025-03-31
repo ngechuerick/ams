@@ -34,6 +34,9 @@ const transactionSchema = mongoose.Schema({
   },
   checkoutRequestID: {
     type: String
+  },
+  errorMessage: {
+    type: String
   }
 });
 

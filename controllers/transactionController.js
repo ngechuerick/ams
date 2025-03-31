@@ -141,6 +141,7 @@ exports.getCallback = catchAsync(async (req, res, next) => {
     const errorMessage =
       errorMessages[ResultCode] || "Payment processing error";
     await Transaction.create({
+      errorMessage,
       checkoutRequestID: callbackSTK.CheckoutRequestID,
       status: "failed"
     });
