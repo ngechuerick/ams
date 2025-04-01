@@ -173,6 +173,10 @@ exports.assignUnitTenant = catchAsync(async (req, res, next) => {
     return next(new AppError("You can only assign tenants a unit!", 400));
   }
 
+  user.unit = undefined;
+  await user.save();
+  await Unit.updateOne({ _id: user.unit }, { $set: { vacant: true } });
+
   const unit = await Unit.findById(req.body.unit);
 
   if (unit.tenant && unit.tenant.toString() !== req.body.tenantId.toString()) {

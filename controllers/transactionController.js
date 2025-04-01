@@ -65,6 +65,22 @@ exports.getCallback = catchAsync(async (req, res, next) => {
     return res.status(200).json({ message: "Awaiting result" });
   }
 
+  // Check if a transaction already exists for this CheckoutRequestID
+  const existingTransaction = await Transaction.findOne({
+    checkoutRequestID: CheckoutRequestID
+  });
+
+  if (existingTransaction) {
+    // If it exists, return early to avoid duplicates
+    return res.status(200).json({
+      status: existingTransaction.status,
+      message:
+        existingTransaction.status === "success"
+          ? "Successfully paid"
+          : existingTransaction.errorMessage
+    });
+  }
+
   /**If the transaction was successfull,we need to create the transaction in the DB */
   if (ResultCode === 0) {
     const items = callbackSTK.CallbackMetadata?.Item || [];
