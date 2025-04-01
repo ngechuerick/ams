@@ -143,11 +143,10 @@ exports.getCallback = catchAsync(async (req, res, next) => {
     const date = new Date();
     const month = date.getMonth() + 1;
 
-    /**When a new user is created the user should be sent an email with the user login details */
     const optionsObj = {
-      email: [newUser.email],
-      subject: "NEW USER LOGIN DETAILS",
-      message: `Dear ${newUser.firstName} ,
+      email: [tenant.email],
+      subject: "Payment confirmation",
+      message: `Dear ${tenant.firstName} ,
         Thankyou for making your rent payment for this Month ${month}
         Amount: ${Amount}
         `
