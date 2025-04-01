@@ -140,19 +140,19 @@ exports.getCallback = catchAsync(async (req, res, next) => {
       return next(new AppError("Tenant does not exist", 404));
     }
 
-    const date = new Date();
-    const month = date.getMonth() + 1;
+    // const date = new Date();
+    // const month = date.getMonth() + 1;
 
-    const optionsObj = {
-      email: [tenant.email],
-      subject: "Payment confirmation",
-      message: `Dear ${tenant.firstName} ,
-        Thankyou for making your rent payment for this Month ${month}
-        Amount: ${Amount}
-        `
-    };
+    // const optionsObj = {
+    //   email: [tenant.email],
+    //   subject: "Payment confirmation",
+    //   message: `Dear ${tenant.firstName} ,
+    //     Thankyou for making your rent payment for this Month ${month}
+    //     Amount: ${Amount}
+    //     `
+    // };
 
-    await trySending(optionsObj);
+    // await trySending(optionsObj);
 
     res.status(200).json({
       status: "success",
