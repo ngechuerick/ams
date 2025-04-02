@@ -172,16 +172,12 @@ exports.getCallback = catchAsync(async (req, res, next) => {
     const errorMessage =
       errorMessages[ResultCode] || "Payment processing error";
     await Transaction.create({
-      errorMessage,
+      errorMessage: `${errorMessage} ${ResultCode}`,
       checkoutRequestID: callbackSTK.CheckoutRequestID,
       status: "failed"
     });
 
     return next(new AppError(errorMessage, 401));
-
-    // if (errorMessages[ResultCode]) {
-    //   return next(new AppError(errorMessages[ResultCode], 401));
-    // }
   }
   // return next(new AppError("Payment processing error", 400));
 
