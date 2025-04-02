@@ -167,7 +167,7 @@ exports.getCallback = catchAsync(async (req, res, next) => {
       1032: "You cancelled the request. Try again!",
       1: "Insufficient funds. Try again.",
       1019: "Transaction expired. Please try again.",
-      2001: "You have entered wrong pin"
+      2001: "You have entered wrong mpesa pin. Try again."
     };
 
     const errorMessage =
