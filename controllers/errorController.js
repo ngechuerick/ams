@@ -2,10 +2,16 @@
 const AppError = require("./../utils/appError");
 
 // TODO IMPLEMENT HANDLING ERRORS FOR REFERENCE ERRORS
+const handleCastErrorDB = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}.`;
+
+  return new AppError(message, 400);
+};
 
 const handleValidationError = (err) => {
   const errorMsgs = Object.values(err.errors).map((el) => el.message);
 
+  console.log(err);
   /**Creating an instance of the appError (inorder for the error to have the isOperational Flag) */
   return new AppError(errorMsgs, err.statusCode);
 };
@@ -18,6 +24,8 @@ const handleDuplicateError = (err) => {
   const duplicateVal = err.errorResponse.errmsg.match(
     /(["'])(?:(?=(\\?))\2.)*?\1/
   )[0];
+
+  console.log(err);
 
   const message = `Duplicate field value: ${duplicateVal}. Please use another value`;
 
@@ -39,6 +47,7 @@ const sendErrorDevelopment = (err, res) => {
 };
 
 const sendErrorProduction = (err, res) => {
+  console.log(err);
   /**OPERATIONAL ERRORS WHICH ARE HANDLED: SEND A CUSTOM ERROR MESSAGE TO CLIENT */
   if (err.isOperational) {
     res.status(err.statusCode).json({
@@ -62,15 +71,18 @@ const sendErrorProduction = (err, res) => {
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
-  console.log(err.message.code);
   if (process.env.NODE_ENV === "development") {
     sendErrorDevelopment(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
+    console.log(err, typeof err);
+    // let error = { ...err };
+    let error = Object.assign({}, err, { message: err.message });
+
+    if (err.name === "CastError") error = handleCastErrorDB(error);
     if (err.name === "ValidationError") error = handleValidationError(err);
     if (err.name === "TokenExpiredError") error = handleTokenExpiredError(err);
     if (err.code === 11000) error = handleDuplicateError(err);
-    if (err.code === "EENVELOPE") error = handleEmailError(err);
+    if (err.code === "ENVELOPE") error = handleEmailError(err);
 
     sendErrorProduction(error, res);
   }
