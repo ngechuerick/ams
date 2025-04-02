@@ -170,8 +170,7 @@ exports.getCallback = catchAsync(async (req, res, next) => {
       2001: "You have entered wrong mpesa pin. Try again."
     };
 
-    const errorMessage =
-      errorMessages[ResultCode] || "Payment processing error";
+    const errorMessage = errorMessages[ResultCode] || "Payment processing erro";
     await Transaction.create({
       errorMessage,
       checkoutRequestID: callbackSTK.CheckoutRequestID,
