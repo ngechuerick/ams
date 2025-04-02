@@ -166,13 +166,14 @@ exports.getCallback = catchAsync(async (req, res, next) => {
       999: "Transaction error. Try again.",
       1032: "You cancelled the request. Try again!",
       1: "Insufficient funds. Try again.",
-      1019: "Transaction expired. Please try again."
+      1019: "Transaction expired. Please try again.",
+      2001: "You have entered wrong pin"
     };
 
     const errorMessage =
       errorMessages[ResultCode] || "Payment processing error";
     await Transaction.create({
-      errorMessage: `${errorMessage} ${ResultCode}`,
+      errorMessage,
       checkoutRequestID: callbackSTK.CheckoutRequestID,
       status: "failed"
     });
